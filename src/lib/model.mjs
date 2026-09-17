@@ -62,7 +62,9 @@ async function installModel(modelId, onProgress) {
     loading = (async () => {
       onProgress({ progress: 0.02, text: "Loading WebLLM runtime" });
       const webllm = await import(WEBLLM_MODULE_URL);
+      const appConfig = createModelAppConfig(webllm, modelId);
       engine = await webllm.CreateMLCEngine(modelId, {
+        appConfig,
         initProgressCallback: (progress) => {
           onProgress({
             progress: progress.progress ?? 0,
@@ -77,6 +79,40 @@ async function installModel(modelId, onProgress) {
     await loading;
   } finally {
     loading = null;
+  }
+}
+function createModelAppConfig(webllm, modelId) {
+  const modelSource = getModelSource();
+  if (!modelSource) {
+    return void 0;
+  }
+  const modelRecord = webllm.prebuiltAppConfig.model_list.find((item) => item.model_id === modelId);
+  if (!modelRecord) {
+    throw new Error(`WebLLM does not contain a model record for ${modelId}.`);
+  }
+  const sourceUrl = new URL(modelSource);
+  const modelUrl = new URL(modelRecord.model);
+  return {
+    ...webllm.prebuiltAppConfig,
+    model_list: [{
+      ...modelRecord,
+      model: new URL(`${modelUrl.pathname}${modelUrl.search}`, sourceUrl).href
+    }]
+  };
+}
+function getModelSource() {
+  const value = new URLSearchParams(globalThis.location?.search ?? "").get("model-source")?.trim();
+  if (!value) {
+    return "";
+  }
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.hostname !== "localhost") {
+      throw new Error("The model source must use HTTPS or localhost.");
+    }
+    return url.href.endsWith("/") ? url.href : `${url.href}/`;
+  } catch {
+    throw new Error("Invalid model source. Use an HTTPS URL, for example ?model-source=https%3A%2F%2Fhf-mirror.example.");
   }
 }
 function resetModel() {

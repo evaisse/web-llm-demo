@@ -20,6 +20,16 @@ The source is plain JavaScript modules under `src/*.mjs`. Third-party runtimes a
 
 The model download is cached by WebLLM in the browser. Tool runtimes are loaded only after their install action is confirmed.
 
+### Proxy or redirecting downloads
+
+Hugging Face model files may first respond with a signed `307 Location` redirect. A browser cannot force a corporate proxy to follow that redirect, so configure a model relay that returns the model files directly and append its origin to the page URL:
+
+```text
+https://evaisse.github.io/web-llm-demo/?model-source=https%3A%2F%2Fmodels.example.internal
+```
+
+The relay must expose the same repository paths below its origin, for example `/mlc-ai/Hermes-3-Llama-3.1-8B-q4f16_1-MLC`, support CORS for the workbench origin, and avoid redirects for model files. Without `model-source`, the app keeps using the official Hugging Face URLs.
+
 ## Deploy on GitHub Pages
 
 The repository is deployed as-is to GitHub Pages. There is no build step: the workflow publishes the repository root and runs automatically after each push to `main`.

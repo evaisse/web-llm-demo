@@ -38,7 +38,7 @@ app.innerHTML = `
         <section id="model-card" class="model-card" aria-label="Local model installer"></section>
       </aside>
 
-      <section class="chat-column" aria-label="Chat workspace">
+      <section id="chat-column" class="chat-column" aria-label="Chat workspace">
         <div class="workspace-head">
           <div id="readiness-chip" class="readiness-chip" role="status" aria-live="polite"></div>
         </div>
@@ -54,7 +54,7 @@ app.innerHTML = `
         </section>
       </section>
 
-      <aside class="tool-column" aria-label="Local toolbox">
+      <aside id="tool-column" class="tool-column" aria-label="Local toolbox">
         <div id="tool-list" class="tool-list"></div>
         <section class="trace-panel" aria-label="Tool activity trace">
           <div class="trace-head"><button class="icon-button small" data-action="copy-trace" title="Copy trace JSON" aria-label="Copy trace JSON">\u25A3</button></div>
@@ -400,11 +400,18 @@ function resetSession() {
 }
 function render() {
   const sessionReady = isSessionReady();
+  const modelInstalled = state.model.cached || state.model.status === "ready";
   const missing = toolDescriptors.filter((descriptor) => !isToolReady(descriptor.id));
   const readinessChip = getElement("readiness-chip");
   const readinessBanner = getElement("readiness-banner");
   const footerNotice = getElement("footer-notice");
   const chatContext = getElement("chat-context");
+  const chatColumn = getElement("chat-column");
+  const toolColumn = getElement("tool-column");
+  chatColumn.classList.toggle("is-hidden", !sessionReady);
+  chatColumn.setAttribute("aria-hidden", String(!sessionReady));
+  toolColumn.classList.toggle("is-hidden", !modelInstalled);
+  toolColumn.setAttribute("aria-hidden", String(!modelInstalled));
   readinessChip.className = `readiness-chip ${sessionReady ? "ready" : "blocked"}`;
   readinessChip.innerHTML = `<span class="chip-dot"></span>${sessionReady ? "SESSION READY" : "INSTALL TO START"}`;
   readinessBanner.className = `readiness-banner ${sessionReady ? "is-ready" : "is-blocked"}`;

@@ -32,6 +32,7 @@ html, body, #app { min-height: 100%; margin: 0; }
 
 .model-card, .chat-panel, .tool-card, .trace-entry { border: 1px solid; }
 .model-card, .tool-card { padding: 1rem; }
+.is-hidden { display: none !important; }
 .tool-card h3 { margin-top: 0.5rem; }
 .model-capability, .inline-error { margin-top: 0.75rem; padding: 0.5rem; border-left: 3px solid; }
 .brand-mark { display: none; }
