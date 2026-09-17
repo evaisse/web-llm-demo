@@ -28,30 +28,23 @@ let webGPUState = "checking";
 app.innerHTML = `
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="./" aria-label="Workbench home">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-        <span>WORKBENCH</span>
-      </a>
-      <div class="topbar-center"><span class="live-dot"></span><span>LOCAL RUNTIME</span><span class="topbar-slash">/</span><span>NO BACKEND</span></div>
-      <div class="topbar-actions"><button class="icon-button" data-action="reset" title="Reset the chat" aria-label="Reset the chat">\u21BA</button><span class="version">v0.1 / BETA</span></div>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="./">Workbench</a><span aria-hidden="true">/</span><span>Conversation</span><span aria-hidden="true">/</span><span>Tools</span>
+      </nav>
     </header>
 
     <main class="app-grid">
       <aside class="intro-panel">
-        <div class="eyebrow">LOCAL WORKBENCH</div>
-        <div class="sidebar-heading"><h1>Workbench</h1><p>Private browser chat with local tools.</p></div>
         <section id="model-card" class="model-card" aria-label="Local model installer"></section>
-        <div class="privacy-note"><span class="lock-icon" aria-hidden="true">\u2301</span><span>Model, code and data stay in this tab.</span></div>
       </aside>
 
       <section class="chat-column" aria-label="Chat workspace">
         <div class="workspace-head">
-          <div><div class="eyebrow">02 / CONVERSATION</div><h2>Ask the workbench</h2></div>
           <div id="readiness-chip" class="readiness-chip" role="status" aria-live="polite"></div>
         </div>
         <div id="readiness-banner" class="readiness-banner"></div>
         <section class="chat-panel">
-          <div class="chat-toolbar"><span class="toolbar-label">SESSION / <strong>LOCAL-01</strong></span><span id="chat-context" class="toolbar-context"></span><button class="text-button" data-action="sample">TRY A SAMPLE RUN <span>\u2197</span></button></div>
+          <div class="chat-toolbar"><button class="icon-button" data-action="reset" title="Reset the chat" aria-label="Reset the chat">\u21BA</button><span id="chat-context" class="toolbar-context"></span><button class="text-button" data-action="sample">TRY A SAMPLE RUN <span>\u2197</span></button></div>
           <div id="messages" class="messages" aria-live="polite" aria-label="Conversation messages"></div>
           <form id="chat-form" class="composer">
             <label class="sr-only" for="prompt-input">Message the local assistant</label>
@@ -62,16 +55,15 @@ app.innerHTML = `
       </section>
 
       <aside class="tool-column" aria-label="Local toolbox">
-        <div class="tool-head"><div><div class="eyebrow">03 / TOOLBOX</div><h2>Installable tools</h2></div><span class="tool-count">2 RUNTIMES</span></div>
         <div id="tool-list" class="tool-list"></div>
         <section class="trace-panel" aria-label="Tool activity trace">
-          <div class="trace-head"><div><div class="eyebrow">ACTIVITY / TRACE</div><h3>What actually ran</h3></div><button class="icon-button small" data-action="copy-trace" title="Copy trace JSON" aria-label="Copy trace JSON">\u25A3</button></div>
+          <div class="trace-head"><button class="icon-button small" data-action="copy-trace" title="Copy trace JSON" aria-label="Copy trace JSON">\u25A3</button></div>
           <div id="trace-list" class="trace-list"></div>
         </section>
       </aside>
     </main>
 
-    <footer class="statusbar"><span class="statusbar-pulse"></span><span id="footer-notice" role="status" aria-live="polite"></span><span class="statusbar-right">WEBGPU <span class="statusbar-divider">\xB7</span> WASM <span class="statusbar-divider">\xB7</span> CACHE-READY</span></footer>
+    <footer class="statusbar"><span id="footer-notice" role="status" aria-live="polite"></span></footer>
   </div>
 `;
 const messagesElement = getElement("messages");
@@ -433,10 +425,8 @@ function renderModelCard() {
   const ready = state.model.status === "ready" && isModelReady();
   const status = state.model.status === "error" ? "FAILED" : ready ? "READY" : !model.supportsTools ? "CHAT ONLY" : state.model.cached ? "CACHED" : "NOT INSTALLED";
   const canInstall = model.supportsTools && webGPUState === "available";
-  modelCardElement.innerHTML = `<div class="model-card-head"><div><div class="eyebrow">MODEL RUNTIME</div><h3>WebLLM</h3></div><span class="model-status ${ready ? "ready" : ""}"><span class="status-dot"></span>${status}</span></div>
-    <label for="model-select">MODEL PROFILE</label>
+  modelCardElement.innerHTML = `<label class="sr-only" for="model-select">Model profile</label>
     <select id="model-select" ${state.model.status === "installing" || ready ? "disabled" : ""}>${modelCatalog.map((item) => `<option value="${item.id}" ${item.id === model.id ? "selected" : ""}>${item.name} \xB7 ${item.size} \xB7 ${item.note}</option>`).join("")}</select>
-    <div class="model-meta"><span>${model.size}</span><span>${model.supportsTools ? "TOOL CALLING" : "CHAT ONLY"}</span></div>
     ${!model.supportsTools ? `<div class="model-capability">This profile can chat, but WebLLM does not declare it as a function-calling model. Select Hermes 3 to use tools.</div>` : ""}
     ${model.supportsTools && webGPUState === "checking" ? `<div class="model-capability">Checking the WebGPU adapter before enabling download\u2026</div>` : ""}
     ${model.supportsTools && webGPUState === "unavailable" ? `<div class="inline-error" role="alert">WebGPU preflight failed. The model download is unavailable in this browser.</div>` : ""}
@@ -448,9 +438,6 @@ function renderMessages() {
   if (state.messages.length === 0) {
     messagesElement.innerHTML = `
       <div class="empty-state">
-        <div class="eyebrow">LOCAL SESSION</div>
-        <h3>Ready when you are.</h3>
-        <p>Install each runtime, then ask the model to compile a snippet, create a row, or inspect the local database.</p>
         <div class="suggestion-row"><button data-action="sample" class="suggestion">Compile a TypeScript snippet <span>\u2197</span></button><button data-action="sample" class="suggestion">Run a SQLite query <span>\u2197</span></button></div>
       </div>`;
     return;
@@ -472,10 +459,7 @@ function renderTools() {
     const statusLabel = tool.status === "error" ? "FAILED" : ready ? "READY" : tool.status === "installing" ? "INITIALIZING" : tool.cached ? "CACHED" : "NOT INSTALLED";
     return `<article class="tool-card ${ready ? "is-ready" : ""} ${tool.status === "error" ? "has-error" : ""}">
         <div class="tool-card-top"><span class="tool-icon ${descriptor.id}">${descriptor.id === "compiler" ? "<>" : "\u2318"}</span><span class="tool-status ${ready ? "status-ready" : ""}"><span class="status-dot"></span>${statusLabel}</span></div>
-        <div class="tool-kicker">${descriptor.kicker}</div>
         <h3>${descriptor.name}</h3>
-        <p>${descriptor.description}</p>
-        <div class="tool-meta"><span>${descriptor.version} \xB7 ${descriptor.size}</span><span>LOCAL ONLY</span></div>
         ${tool.status === "installing" ? `<div class="progress-wrap"><div class="progress-label"><span>${escapeHTML(tool.progress.label)}</span><span>${Math.round(tool.progress.value * 100)}%</span></div><div class="progress-track" role="progressbar" aria-label="${descriptor.name} installation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(tool.progress.value * 100)}"><span style="width:${Math.max(4, tool.progress.value * 100)}%"></span></div></div>` : ""}
         ${tool.error ? `<div class="inline-error" role="alert">${escapeHTML(tool.error)}</div>` : ""}
         <div class="tool-actions"><button class="install-button ${ready ? "installed" : ""}" data-action="install-tool" data-tool="${descriptor.id}" ${tool.status === "installing" || ready ? "disabled" : ""}>${buttonLabel} ${ready ? "\u2713" : "\u2197"}</button>${ready ? `<button class="test-button" data-action="test-tool" data-tool="${descriptor.id}" ${state.busy ? "disabled" : ""}>TEST TOOL</button>` : ""}</div>
@@ -484,7 +468,7 @@ function renderTools() {
 }
 function renderTrace() {
   if (state.toolRuns.length === 0) {
-    traceListElement.innerHTML = `<div class="trace-empty"><span class="trace-empty-line"></span><p>Tool activity will appear here.<br />The model cannot call an uninstalled runtime.</p></div>`;
+    traceListElement.innerHTML = "";
     return;
   }
   traceListElement.innerHTML = state.toolRuns.slice().reverse().map((run) => `<details class="trace-entry ${run.status}" ${run.status === "running" ? "open" : ""}>
