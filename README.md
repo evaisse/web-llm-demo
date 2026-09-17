@@ -20,6 +20,16 @@ The source is plain JavaScript modules under `src/*.mjs`. Third-party runtimes a
 
 The model download is cached by WebLLM in the browser. Tool runtimes are loaded only after their install action is confirmed.
 
+## Deploy on GitHub Pages
+
+The repository is deployed as-is to GitHub Pages. There is no build step: the workflow publishes the repository root and runs automatically after each push to `main`.
+
+1. Open **Settings > Pages** on GitHub.
+2. Under **Build and deployment**, choose **GitHub Actions** as the source.
+3. Push to `main`, or start **Deploy static site to GitHub Pages** manually from the **Actions** tab.
+
+The site will be available at `https://evaisse.github.io/web-llm-demo/`. The model and WASM runtimes are downloaded by each user's browser from the pinned CDN URLs.
+
 ## Included tools
 
 - **Compiler** — esbuild WASM compiles a TypeScript or JavaScript snippet in-browser.
